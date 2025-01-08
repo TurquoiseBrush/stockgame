@@ -4,7 +4,7 @@
   "description": "Stock market game",
   "main": "game1.html",
   "scripts": {
-    "start": "http-server ."
+    "start": "http-server -p 3000"
   },
   "dependencies": {
     "firebase": "^11.1.0",
