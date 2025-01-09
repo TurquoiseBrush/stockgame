@@ -1,15 +1,6 @@
 // Import Firebase SDK modules
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, set, onValue } from "firebase/database";
-const express = require('express');
-const app = express();
-const port = process.env.PORT || 3000; // Use the port provided by Render, fallback to 3000 if not set
-
-app.use(express.static('public')); // Make sure you serve your static files from the correct folder
-
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
 
 // Your Firebase configuration
 const firebaseConfig = {
@@ -23,8 +14,8 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const appFirebase = initializeApp(firebaseConfig);
-const database = getDatabase(appFirebase);
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
 
 let currentChart = null; // Track the current chart instance
 
