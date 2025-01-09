@@ -74,6 +74,8 @@ function showStockDetails(stockName) {
                 x: { display: true, title: { display: true, text: "Time (Ticks)" } },
                 y: { display: true, title: { display: true, text: "Price ($)" } },
             },
+            responsive: true, // Ensure the chart is responsive
+            maintainAspectRatio: false // Allow the chart to fill the modal
         },
     });
 
@@ -209,4 +211,3 @@ function listenToStockData(stockName) {
         }
     });
 }
-
