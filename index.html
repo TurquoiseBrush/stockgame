@@ -25,13 +25,10 @@
     </main>
 
     <!-- Modal for Stock Details -->
-    <div id="stock-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
-            <h2 id="modal-stock-name"></h2>
-            <canvas id="stock-chart" width="400" height="200"></canvas>
-            <p>Price History</p>
-        </div>
+    <div id="stock-modal" style="display:none;">
+        <h2 id="modal-stock-name"></h2>
+        <canvas id="stock-chart"></canvas>
+        <button onclick="closeModal()">Close</button>
     </div>
 
     <footer>

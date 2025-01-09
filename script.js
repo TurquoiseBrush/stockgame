@@ -43,14 +43,22 @@ function updatePriceHistory() {
 
 // Function to show stock details in modal
 function showStockDetails(stockName) {
+    console.log(`Opening details for stock: ${stockName}`); // Debugging line
     const stock = stocks.find(s => s.name === stockName);
     selectedStock = stock;
+
+    if (!stock) {
+        console.error(`Stock ${stockName} not found.`);
+        return;
+    }
+
     document.getElementById("modal-stock-name").textContent = stock.name;
 
     const ctx = document.getElementById("stock-chart").getContext("2d");
 
     // Destroy the old chart instance if it exists
     if (currentChart) {
+        console.log("Destroying previous chart instance."); // Debugging line
         currentChart.destroy();
     }
 
@@ -74,8 +82,8 @@ function showStockDetails(stockName) {
                 x: { display: true, title: { display: true, text: "Time (Ticks)" } },
                 y: { display: true, title: { display: true, text: "Price ($)" } },
             },
-            responsive: true, // Ensure the chart is responsive
-            maintainAspectRatio: false // Allow the chart to fill the modal
+            responsive: true,
+            maintainAspectRatio: false,
         },
     });
 
