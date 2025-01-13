@@ -1,221 +1,177 @@
-// Import Firebase SDK modules
-import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, onValue } from "firebase/database";
-
-// Your Firebase configuration
+// Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDAEo9yYddRDmPierUcFLl--i8NWCLDX_M",
-  authDomain: "stockgame-60441.firebaseapp.com",
-  projectId: "stockgame-60441",
-  storageBucket: "stockgame-60441.firebasestorage.app",
-  messagingSenderId: "1071328147119",
-  appId: "1:1071328147119:web:5895e48959e22560cf465a",
-  measurementId: "G-DRH2X244WP"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
-
-let currentChart = null; // Track the current chart instance
-
-const stocks = [
-    { name: "TechCorp", price: 100, history: [], volatility: 0.1, dividend: 2 },
-    { name: "HealthInc", price: 150, history: [], volatility: 0.05, dividend: 3 },
-    { name: "EcoEnergy", price: 75, history: [], volatility: 0.15, dividend: 1 },
-    { name: "AutoWorks", price: 200, history: [], volatility: 0.2, dividend: 5 },
-];
-
-let cash = 1000;
-let portfolio = {};
-let selectedStock = null;
-let totalDebt = 0;
-
-// Function to update price history
-function updatePriceHistory() {
-    stocks.forEach(stock => {
-        const change = (Math.random() - 0.5) * stock.volatility * stock.price;
-        stock.price = Math.max(1, stock.price + change);
-        stock.history.push(stock.price);
-        if (stock.history.length > 20) stock.history.shift(); // Limit history to 20 entries
-    });
-}
-
-// Function to show stock details in modal
-function showStockDetails(stockName) {
-    console.log(`Opening details for stock: ${stockName}`); // Debugging line
-    const stock = stocks.find(s => s.name === stockName);
-    selectedStock = stock;
-
-    if (!stock) {
-        console.error(`Stock ${stockName} not found.`);
-        return;
-    }
-
-    document.getElementById("modal-stock-name").textContent = stock.name;
-
-    const ctx = document.getElementById("stock-chart").getContext("2d");
-
-    // Destroy the old chart instance if it exists
-    if (currentChart) {
-        console.log("Destroying previous chart instance."); // Debugging line
-        currentChart.destroy();
-    }
-
-    // Render the new chart
-    currentChart = new Chart(ctx, {
-        type: "line",
-        data: {
-            labels: stock.history.map((_, i) => `T-${stock.history.length - i}`),
-            datasets: [
-                {
-                    label: "Price ($)",
-                    data: stock.history,
-                    borderColor: "rgba(75, 192, 192, 1)",
-                    borderWidth: 2,
-                    fill: false,
-                },
-            ],
-        },
-        options: {
-            scales: {
-                x: { display: true, title: { display: true, text: "Time (Ticks)" } },
-                y: { display: true, title: { display: true, text: "Price ($)" } },
-            },
-            responsive: true,
-            maintainAspectRatio: false,
-        },
-    });
-
-    // Show the modal
-    document.getElementById("stock-modal").style.display = "block";
-}
-
-// Close the modal
-function closeModal() {
-    document.getElementById("stock-modal").style.display = "none";
-
-    // Destroy the chart instance to free up resources
-    if (currentChart) {
-        currentChart.destroy();
-        currentChart = null;
-    }
-}
-
-// Buy stock
-function buyStock(stockName, event) {
-    event.stopPropagation();  // Prevent modal from opening
-
-    const stock = stocks.find(s => s.name === stockName);
-    if (cash >= stock.price) {
-        cash -= stock.price;
-        if (!portfolio[stock.name]) portfolio[stock.name] = 0;
-        portfolio[stock.name]++;
-        updatePortfolio();
-
-        // Save updated data to Firebase
-        saveUserData('user123', cash, portfolio);
-    } else {
-        alert("Not enough cash!");
-    }
-}
-
-// Sell stock
-function sellStock(stockName, event) {
-    event.stopPropagation();  // Prevent modal from opening
-
-    const stock = stocks.find(s => s.name === stockName);
-    if (portfolio[stock.name] > 0) {
-        cash += stock.price;
-        portfolio[stock.name]--;
-        if (portfolio[stock.name] === 0) delete portfolio[stock.name];
-        updatePortfolio();
-
-        // Save updated data to Firebase
-        saveUserData('user123', cash, portfolio);
-    } else {
-        alert("You don't own this stock!");
-    }
-}
-
-// Update portfolio UI
-function updatePortfolio() {
-    const portfolioList = document.getElementById("stocks-owned");
-    portfolioList.innerHTML = "";
-    Object.keys(portfolio).forEach(stock => {
-        portfolioList.innerHTML += `<li>${stock}: ${portfolio[stock]} shares</li>`;
-    });
-    document.getElementById("cash").textContent = cash.toFixed(2);
-}
-
-// Update stock market UI
-function updateMarket() {
-    const stockList = document.getElementById("stock-list");
-    stockList.innerHTML = "";
-    stocks.forEach(stock => {
-        stockList.innerHTML += `
-            <div onclick="showStockDetails('${stock.name}')">
-                <h3>${stock.name}</h3>
-                <p>Price: $${stock.price.toFixed(2)}</p>
-                <button onclick="buyStock('${stock.name}', event)">Buy</button>
-                <button onclick="sellStock('${stock.name}', event)">Sell</button>
-            </div>
-        `;
-    });
-}
-
-// Fluctuate stock prices and update history
-function fluctuatePrices() {
-    updatePriceHistory();
-    updateMarket();
-
-    // If a stock chart is open, update its data
-    if (selectedStock && currentChart) {
-        currentChart.data.datasets[0].data = selectedStock.history;
-        currentChart.update();
-    }
-}
-
-// Initialize the game
-updateMarket();
-setInterval(fluctuatePrices, 5000); // Update stock prices every 5 seconds
-
-// Function to save user data to Firebase
-function saveUserData(userId, cash, portfolio) {
-    const userRef = ref(database, 'users/' + userId);
-    set(userRef, {
-        cash: cash,
-        portfolio: portfolio
-    }).then(() => {
-        console.log('User data saved successfully');
-    }).catch((error) => {
-        console.error('Error saving user data: ', error);
-    });
-}
-
-// Function to save stock data to Firebase
-function saveStockData(stockName, price, history) {
-    const stockRef = ref(database, 'stocks/' + stockName);
-    set(stockRef, {
-        price: price,
-        history: history
-    }).then(() => {
-        console.log('Stock data saved successfully');
-    }).catch((error) => {
-        console.error('Error saving stock data: ', error);
-    });
-}
-
-// Optional: Listening to real-time updates for user data and stock data
-function listenToStockData(stockName) {
-    const stockRef = ref(database, 'stocks/' + stockName);
-    onValue(stockRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            const stock = stocks.find(s => s.name === stockName);
-            stock.price = data.price;
-            stock.history = data.history;
-            updateMarket();  // Update stock price and history in your UI
-        }
-    });
-}
+    apiKey: "AIzaSyBzEB5vLb3VAw6Tk3k6zMn78VO4scvCWow",
+    authDomain: "stock-game-5c955.firebaseapp.com",
+    projectId: "stock-game-5c955",
+    storageBucket: "stock-game-5c955.firebasestorage.app",
+    messagingSenderId: "70023379312",
+    appId: "1:70023379312:web:2fbe7d23a553be3f82b7b5",
+    measurementId: "G-JH4QJVYS4Z"
+  };
+  // Initialize Firebase
+  const app = firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  
+  let currentUser = null;
+  let cash = 1000; // Starting cash value
+  let portfolio = {}; // User's stock portfolio
+  
+  // Check if the user is authenticated
+  auth.onAuthStateChanged((user) => {
+      if (user) {
+          currentUser = user;
+          checkUserData();
+          showGamePage();
+      } else {
+          showLoginPage();
+      }
+  });
+  
+  // Login with Google
+  function loginWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider).then((result) => {
+          currentUser = result.user;
+          checkUserData();
+          showGamePage();
+      }).catch((error) => {
+          console.error(error.message);
+      });
+  }
+  
+  // Login with Email and Password
+  function loginWithEmail() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      auth.signInWithEmailAndPassword(email, password).then((userCredential) => {
+          currentUser = userCredential.user;
+          checkUserData();
+          showGamePage();
+      }).catch((error) => {
+          console.error(error.message);
+      });
+  }
+  
+  // Create an Account with Email and Password
+  function createAccount() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      auth.createUserWithEmailAndPassword(email, password).then((userCredential) => {
+          currentUser = userCredential.user;
+          checkUserData();
+          showGamePage();
+      }).catch((error) => {
+          console.error(error.message);
+      });
+  }
+  
+  // Logout
+  function logout() {
+      auth.signOut().then(() => {
+          currentUser = null;
+          showLoginPage();
+      }).catch((error) => {
+          console.error(error.message);
+      });
+  }
+  
+  // Show the stock game page
+  function showGamePage() {
+      document.getElementById('login-section').style.display = 'none';
+      document.getElementById('game-section').style.display = 'block';
+      loadStockList();
+      loadUserPortfolio();
+  }
+  
+  // Show the login page
+  function showLoginPage() {
+      document.getElementById('login-section').style.display = 'block';
+      document.getElementById('game-section').style.display = 'none';
+  }
+  
+  // Check user data in Firestore
+  function checkUserData() {
+      const userRef = db.collection('users').doc(currentUser.uid);
+      userRef.get().then((doc) => {
+          if (doc.exists) {
+              const userData = doc.data();
+              cash = userData.cash || 1000;
+              portfolio = userData.portfolio || {};
+              updateUI();
+          } else {
+              userRef.set({
+                  cash: 1000,
+                  portfolio: {}
+              });
+          }
+      }).catch((error) => {
+          console.error(error.message);
+      });
+  }
+  
+  // Update UI (cash and portfolio)
+  function updateUI() {
+      document.getElementById('cash').textContent = cash;
+      loadUserPortfolio();
+  }
+  
+  // Load stock list (Fake stocks for the game)
+  function loadStockList() {
+      const stockList = [
+          { symbol: 'AAPL', name: 'Apple', price: 150 },
+          { symbol: 'GOOG', name: 'Google', price: 2500 },
+          { symbol: 'AMZN', name: 'Amazon', price: 3500 },
+          // Add more stocks here
+      ];
+  
+      const stockListElement = document.getElementById('stock-list');
+      stockListElement.innerHTML = '';
+      stockList.forEach((stock) => {
+          const stockItem = document.createElement('li');
+          stockItem.textContent = `${stock.name} (${stock.symbol}) - $${stock.price}`;
+          const buyButton = document.createElement('button');
+          buyButton.textContent = 'Buy';
+          buyButton.onclick = () => buyStock(stock.symbol, stock.price);
+          stockItem.appendChild(buyButton);
+          stockListElement.appendChild(stockItem);
+      });
+  }
+  
+  // Load the user's portfolio
+  function loadUserPortfolio() {
+      const portfolioListElement = document.getElementById('portfolio-list');
+      portfolioListElement.innerHTML = '';
+      for (const symbol in portfolio) {
+          const stock = portfolio[symbol];
+          const portfolioItem = document.createElement('li');
+          portfolioItem.textContent = `${stock.name} (${stock.symbol}) - Quantity: ${stock.quantity}`;
+          portfolioListElement.appendChild(portfolioItem);
+      }
+  }
+  
+  // Buy Stock
+  function buyStock(symbol, price) {
+      if (cash >= price) {
+          cash -= price;
+          if (portfolio[symbol]) {
+              portfolio[symbol].quantity += 1;
+          } else {
+              portfolio[symbol] = { symbol, name: symbol, quantity: 1 };
+          }
+          saveUserData();
+          updateUI();
+      } else {
+          alert("You don't have enough cash to buy this stock.");
+      }
+  }
+  
+  // Save user data to Firestore
+  function saveUserData() {
+      const userRef = db.collection('users').doc(currentUser.uid);
+      userRef.set({
+          cash,
+          portfolio
+      }, { merge: true });
+  }
+  

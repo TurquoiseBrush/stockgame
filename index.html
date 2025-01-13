@@ -4,36 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Market Game</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="script.js"></script> <!-- Added defer to ensure JS loads after HTML -->
+    <script src="https://www.gstatic.com/firebasejs/9.12.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.12.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.12.0/firebase-firestore.js"></script>
+    <script src="script.js" defer></script>
 </head>
 <body>
-    <header>
-        <h1>Stock Market Trading Game</h1>
-        <p>Buy low, sell high, and grow your portfolio!</p>
-    </header>
-    <main>
-        <div id="portfolio">
-            <h2>Your Portfolio</h2>
-            <p>Cash: $<span id="cash">1000</span></p>
-            <ul id="stocks-owned"></ul>
-        </div>
-        <div id="market">
-            <h2>Stock Market</h2>
-            <div id="stock-list"></div>
-        </div>
-    </main>
-
-    <!-- Modal for Stock Details -->
-    <div id="stock-modal" style="display:none;">
-        <h2 id="modal-stock-name"></h2>
-        <canvas id="stock-chart"></canvas>
-        <button onclick="closeModal()">Close</button>
+    <!-- Stock Game Content -->
+    <div id="login-section">
+        <p>Please <a href="login.html">login</a> to play the stock game.</p>
     </div>
 
-    <footer>
-        <p>&copy; 2025 Stock Market Game. Good luck!</p>
-    </footer>
+    <div id="game-section" style="display:none;">
+        <h1>Welcome to the Stock Game</h1>
+        <p>Cash: $<span id="cash">1000</span></p>
+        <div id="stocks-owned">
+            <h2>Your Portfolio</h2>
+            <ul id="portfolio-list"></ul>
+        </div>
+        <h2>Available Stocks</h2>
+        <ul id="stock-list"></ul>
+        <button onclick="logout()">Logout</button>
+    </div>
 </body>
 </html>

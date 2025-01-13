@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Stock Game</title>
+    <script src="https://www.gstatic.com/firebasejs/9.12.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.12.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.12.0/firebase-firestore.js"></script>
+    <script src="script.js" defer></script>
+
+    <!-- Embedded CSS -->
+    <style>
+        /* Reset some default styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        #login-section {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #4CAF50;
+        }
+
+        p {
+            font-size: 1rem;
+            color: #555;
+            margin-top: 20px;
+        }
+
+        a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Add a subtle animation for fading in the page */
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        button#create-account {
+            background-color: #007BFF;
+            margin-top: 15px;
+        }
+
+        button#create-account:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="login-section">
+        <h1>Login</h1>
+        <button onclick="loginWithGoogle()">Login with Google</button>
+        <p>or</p>
+        <input type="email" id="email" placeholder="Enter your email">
+        <input type="password" id="password" placeholder="Enter your password">
+        <button onclick="loginWithEmail()">Login with Email</button>
+        <p>Don't have an account? <button onclick="createAccount()">Create an Account</button></p>
+    </div>
+</body>
+</html>
